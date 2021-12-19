@@ -11,7 +11,7 @@ export async function makeGetRequest<T>(
     if (links && getAll) {
       const linksList = links.split(", <");
       const lastPage = linksList[1].substring(
-        linksList[1].indexOf("=") + 1,
+        linksList[1].indexOf("&page=") + 6,
         linksList[1].lastIndexOf(">")
       );
 
@@ -30,7 +30,6 @@ async function getAllPages<T>(url: string, maxPages: number): Promise<T[]> {
   let requests = [];
 
   for (let i = 2; i < maxPages + 1; i++) {
-    console.log(`${url}?page=${i}`);
     requests.push(fetch(`${url}?page=${i}`).then((res) => res.json()));
   }
 
@@ -51,7 +50,7 @@ export async function makeGetRequestWithoutPaging<T>(
         const linksList = links.split(", <");
         totalPages = parseInt(
           linksList[1].substring(
-            linksList[1].indexOf("=") + 1,
+            linksList[1].indexOf("&page=") + 6,
             linksList[1].lastIndexOf(">")
           )
         );

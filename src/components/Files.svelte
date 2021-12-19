@@ -14,7 +14,7 @@
   async function loadReleases(repo: Repository): Promise<Release[]> {
     [releases] = await Promise.all([
       makeGetRequestWithoutPaging<Release>(
-        `repos/qlik-download/${repo.name}/releases`
+        `repos/qlik-download/${repo.name}/releases?per_page=50`
       ).then((r) => {
         totalPages = r.totalPages;
         return r.data.sort((a, b) => (a.tag_name > b.tag_name ? -1 : 1));
@@ -33,9 +33,9 @@
   async function loadMore(page: number): Promise<Release[]> {
     [releases] = await Promise.all([
       makeGetRequestWithoutPaging<Release>(
-        `repos/qlik-download/${repository.name}/releases?page=${page}`
+        `repos/qlik-download/${repository.name}/releases?page=${page}&per_page=50`
       ).then((r) => {
-        totalPages = r.totalPages;
+        // totalPages = r.totalPages;
         return r.data.sort((a, b) => (a.tag_name > b.tag_name ? -1 : 1));
       }),
       new Promise((resolve, reject) => {
@@ -57,7 +57,7 @@
     });
   }
 
-  // $: console.log(releases);
+  // $: console.log(totalPages);
 </script>
 
 <div class="files-container">
@@ -67,7 +67,7 @@
     <release-header>
       <div>RELEASE NAME</div>
       <div>VERSION</div>
-      <div>SIZE</div>
+      <div>EXE SIZE</div>
       <div>DOWNLOAD</div>
     </release-header>
     <releases>
@@ -99,8 +99,7 @@
       {#if totalPages && totalPages > 0}
         <Pagination
           {totalPages}
-          on:click:button--next={(ev) => loadMore(parseInt(ev.detail))}
-          on:click:button--previous={(ev) => loadMore(parseInt(ev.detail))}
+          on:click:button--position={(ev) => loadMore(parseInt(ev.detail))}
         />
       {/if}
     </releases>

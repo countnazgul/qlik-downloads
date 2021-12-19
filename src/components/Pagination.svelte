@@ -1,6 +1,8 @@
 <script>
   import CaretRight32 from "carbon-icons-svelte/lib/CaretRight32";
   import CaretLeft32 from "carbon-icons-svelte/lib/CaretLeft32";
+  import SkipBackFilled20 from "carbon-icons-svelte/lib/SkipBackFilled20";
+  import SkipForwardFilled20 from "carbon-icons-svelte/lib/SkipForwardFilled20";
   import { createEventDispatcher } from "svelte";
 
   export let totalPages;
@@ -18,7 +20,15 @@
       currentPage++;
     }
 
-    dispatch(`click:button--${position}`, currentPage);
+    if (position == "first") {
+      currentPage = 1;
+    }
+
+    if (position == "last") {
+      currentPage = totalPages;
+    }
+
+    dispatch(`click:button--position`, currentPage);
   }
 </script>
 
@@ -26,6 +36,16 @@
   <div>Page {currentPage} of {totalPages}</div>
   <div />
   <div class="event" class:no-events={currentPage == 1}>
+    <div
+      class="navigation"
+      class:disabled={currentPage == 1}
+      title="First page"
+      on:click={() => navigationChange("first")}
+    >
+      <SkipBackFilled20 />
+    </div>
+  </div>
+  <div class="event last-button" class:no-events={currentPage == 1}>
     <div
       class="navigation"
       class:disabled={currentPage == 1}
@@ -45,6 +65,16 @@
       <CaretRight32 />
     </div>
   </div>
+  <div class="event last-button" class:no-events={currentPage == totalPages}>
+    <div
+      class="navigation"
+      class:disabled={currentPage == totalPages}
+      title="Last page"
+      on:click={() => navigationChange("last")}
+    >
+      <SkipForwardFilled20 />
+    </div>
+  </div>
 </pagination>
 
 <style>
@@ -53,7 +83,7 @@
     width: 100%;
     height: 50px;
     display: grid;
-    grid-template-columns: 200px auto 50px 50px;
+    grid-template-columns: 200px auto 50px 50px 50px 50px;
     border-top: 1px solid;
   }
 
