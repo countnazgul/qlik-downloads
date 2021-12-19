@@ -1,6 +1,13 @@
 {
   "name": "qlik-downloads",
-  "version": "1.0.3",
+  "version": "1.0.4",
+  "description": "Bit better Qlik downloads page",
+  "author": {
+    "email": "stefan.stoichev@gmail.com",
+    "name": "Stefan Stoichev",
+    "url": "https://sstoichev.eu"
+  },
+  "license": "MIT",
   "private": true,
   "scripts": {
     "build": "rollup -c",
@@ -8,6 +15,14 @@
     "start": "sirv public --no-clear",
     "check": "svelte-check --tsconfig ./tsconfig.json"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/countnazgul/qlik-downloads.git"
+  },
+  "bugs": {
+    "url": "https://github.com/countnazgul/qlik-downloads/issues"
+  },
+  "homepage": "https://github.com/countnazgul/qlik-downloads",
   "devDependencies": {
     "@rollup/plugin-commonjs": "^17.0.0",
     "@rollup/plugin-node-resolve": "^11.0.0",

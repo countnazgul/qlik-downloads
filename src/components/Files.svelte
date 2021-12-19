@@ -122,6 +122,7 @@
     width: 100%;
     display: flex;
     flex-direction: column;
+    scrollbar-gutter: stable both-edges;
   }
 
   releases-list {
@@ -132,14 +133,23 @@
   }
 
   release {
-    padding-top: 8px;
-    padding-bottom: 8px;
     display: grid;
-    grid-template-columns: 10fr 10fr 10fr 10fr;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
   }
 
   release > div {
-    padding-left: 5px;
+    /* padding-top: 8px; */
+    /* padding-bottom: 8px; */
+    /* 
+    padding-left: 5px; */
+    padding: 8px;
+    border-right: 1px solid;
+  }
+
+  release > div:nth-child(4) {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
   }
 
   release:hover {
@@ -149,13 +159,13 @@
 
   release-header {
     display: grid;
-    grid-template-columns: 10fr 10fr 10fr 10fr;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
     background-color: #059848;
-    padding: 5px;
     /* height: 30px; */
   }
 
   release-header > div {
+    padding: 5px;
     font-size: 1.25rem;
     text-align: center;
     border-right: 1px solid;
