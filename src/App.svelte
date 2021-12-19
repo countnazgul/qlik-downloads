@@ -14,14 +14,14 @@
 
   async function loadData(): Promise<Repository[]> {
     let [repos] = await Promise.all([
-      makeGetRequest<Repository[]>("orgs/qlik-download/repos").then((r) =>
+      makeGetRequest<Repository>("orgs/qlik-download/repos", true).then((r) =>
         r.sort((a, b) => (a.description > b.description ? 1 : -1))
       ),
       new Promise((resolve, reject) => {
         let wait = setTimeout(() => {
           clearTimeout(wait);
           resolve("");
-        }, 1000);
+        }, 500);
       }),
     ]);
 
@@ -129,6 +129,7 @@
     overflow: auto;
     grid-row: 2;
     grid-column: 1;
+    border-right: 1px solid darkgray;
   }
 
   products > ul > li {
