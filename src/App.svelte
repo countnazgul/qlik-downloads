@@ -1,6 +1,7 @@
 <script lang="ts">
-  import { Loading, Theme } from "carbon-components-svelte";
+  import { Loading, Theme, Modal } from "carbon-components-svelte";
   import BrightnessContrast24 from "carbon-icons-svelte/lib/BrightnessContrast24";
+  import InformationFilled24 from "carbon-icons-svelte/lib/InformationFilled24";
   import LogoGithub24 from "carbon-icons-svelte/lib/LogoGithub24";
   import "carbon-components-svelte/css/all.css";
   import { makeGetRequest } from "./lib/comms";
@@ -9,8 +10,10 @@
   import type { CarbonTheme } from "carbon-components-svelte/types/Theme/Theme.svelte";
 
   let theme: CarbonTheme = "g90";
-  $: fill = theme == "g90" ? "white" : "black";
   let selectedProduct: Repository = {} as Repository;
+  let infoModalOpen = false;
+
+  $: fill = theme == "g90" ? "white" : "black";
 
   async function loadData(): Promise<Repository[]> {
     let [repos] = await Promise.all([
@@ -39,7 +42,7 @@
     <Loading />
   {:then repos}
     <header>
-      QLIK DOWNLOADS
+      <div>QLIK DOWNLOADS</div>
       <switcher>
         <Theme
           bind:theme
@@ -61,6 +64,13 @@
               theme == "white" ? (theme = "g90") : (theme = "white");
             }}
           />
+        </div>
+        <div
+          class="link"
+          title="Info"
+          on:click={() => (infoModalOpen = !infoModalOpen)}
+        >
+          <InformationFilled24 style="fill: {fill}" />
         </div>
         <a
           class="link"
@@ -97,6 +107,38 @@
       {/if}
     </files>
   {/await}
+
+  <Modal
+    passiveModal
+    bind:open={infoModalOpen}
+    modalHeading="Information"
+    on:open
+    on:close
+  >
+    <div>
+      Author: Stefan Stoichev ( <a
+        href="https://twitter.com/countnazgul"
+        target="_blank">@countnazgul</a
+      >
+      |
+      <a href="https://sstoichev.eu" target="_blank">sstoichev.eu</a> |
+      <a href="https://github.com/countnazgul" target="_blank">GitHub</a> |
+      <a
+        href="https://stackoverflow.com/users/159365/stefan-stoichev"
+        target="_blank">Stack Overflow</a
+      >
+      )
+    </div>
+    <div>&nbsp;</div>
+    <div>
+      The data is sourced from Qlik's public <a
+        href="https://github.com/orgs/qlik-download/repositories"
+        target="_blank">GitHub repositories</a
+      >
+    </div>
+    <div>&nbsp;</div>
+    <div><strong>"Qlik Downloads" is not affiliated with Qlik</strong></div>
+  </Modal>
 </main>
 
 <style>
@@ -123,10 +165,13 @@
     padding: 10px;
   }
 
+  header > div:first-of-type {
+    color: var(--cds-text-01, #161616);
+  }
+
   products {
     overflow: auto;
     height: 100%;
-    overflow: auto;
     grid-row: 2;
     grid-column: 1;
     border-right: 1px solid darkgray;
