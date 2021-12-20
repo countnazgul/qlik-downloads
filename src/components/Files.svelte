@@ -90,10 +90,19 @@
       <releases-list>
         {#each currentPage as release}
           <release>
-            <div title={release.name}>{release.qRelease}</div>
-            <div>{release.qReleaseType}</div>
-            <div>{release.tag_name}</div>
-            <div>
+            <div
+              title={release.name}
+              class:initial-release={release.qReleaseType == "0"}
+            >
+              {release.qRelease}
+            </div>
+            <div class:initial-release={release.qReleaseType == "0"}>
+              {release.qReleaseType}
+            </div>
+            <div class:initial-release={release.qReleaseType == "0"}>
+              {release.tag_name}
+            </div>
+            <div class:initial-release={release.qReleaseType == "0"}>
               {Math.floor(Number(release.assets[0].size) / 1024 / 1024)} MB
             </div>
             <div>
@@ -186,7 +195,7 @@
     padding: 5px;
     font-size: 1.25rem;
     text-align: center;
-    border-right: 1px solid;
+    border-right: 1px solid var(--cds-text-01, #161616);
   }
 
   release > div {
@@ -207,5 +216,10 @@
     align-items: center;
     justify-content: center;
     font-size: 2rem;
+  }
+
+  .initial-release {
+    color: #059848;
+    border-right: 1px solid var(--cds-text-01, #161616);
   }
 </style>
