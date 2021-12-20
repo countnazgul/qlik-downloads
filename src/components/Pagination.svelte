@@ -6,6 +6,9 @@
   import { createEventDispatcher } from "svelte";
 
   export let totalPages;
+  export let height;
+
+  $: h = `${height + 10}px`;
 
   const dispatch = createEventDispatcher();
 
@@ -32,7 +35,7 @@
   }
 </script>
 
-<pagination>
+<pagination style="--pagination-height: {h}">
   <div>Page {currentPage} of {totalPages}</div>
   <div />
   <div class="event" class:no-events={currentPage == 1}>
@@ -79,9 +82,9 @@
 
 <style>
   pagination {
-    /* background-color: red; */
     width: 100%;
-    height: 50px;
+    /* height: 50px; */
+    height: var(--pagination-height);
     display: grid;
     grid-template-columns: 200px auto 50px 50px 50px 50px;
     border-top: 1px solid;

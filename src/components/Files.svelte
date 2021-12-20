@@ -1,19 +1,37 @@
 <script lang="ts">
   import { Loading } from "carbon-components-svelte";
-  // import Pagination from "./Pagination.svelte";
+  import Pagination from "./Pagination.svelte";
   import { makeGetRequest, makeGetRequestWithoutPaging } from "../lib/comms";
   import { extractRelease } from "../lib/util";
 
   import type { ReleaseExtended, Repository } from "../lib/types";
 
   export let repository: Repository;
-  let dataLoaded = false;
-  // let totalPages = 0;
 
-  let releases: ReleaseExtended[] = [];
+  const releaseElementHeight = 30;
+
+  let releasesContainer: HTMLElement;
+  let releasesContainerHeight: number;
+  let allReleases: ReleaseExtended[] = [];
+  let currentPage: ReleaseExtended[] = [];
+  let dataLoaded = false;
+
+  $: releasesPerPage = releasesContainer
+    ? Math.floor(Math.floor(releasesContainerHeight) / releaseElementHeight) - 2
+    : -1;
+  $: totalPages = Math.floor(allReleases.length / releasesPerPage);
+  $: releasesPerPage > -1 && allReleases.length > 0
+    ? (currentPage = allReleases.slice(0, releasesPerPage))
+    : [];
+  $: paginationHeight = releasesContainerHeight - releasesPerPage * 30;
+  $: console.log(
+    releasesContainerHeight,
+    releasesPerPage * 30,
+    paginationHeight
+  );
 
   async function loadReleases(repo: Repository): Promise<ReleaseExtended[]> {
-    [releases] = await Promise.all([
+    [allReleases] = await Promise.all([
       makeGetRequest<ReleaseExtended>(
         `repos/qlik-download/${repo.name}/releases?per_page=50`,
         true
@@ -35,50 +53,29 @@
       }),
     ]);
 
-    return releases;
+    return allReleases;
   }
 
-  // async function loadMore(page: number): Promise<Release[]> {
-  //   [releases] = await Promise.all([
-  //     makeGetRequestWithoutPaging<Release>(
-  //       `repos/qlik-download/${repository.name}/releases?page=${page}&per_page=50`
-  //     ).then((r) => {
-  //       // totalPages = r.totalPages;
-  //       // return r.data.sort((a, b) => (a.tag_name > b.tag_name ? -1 : 1));
-  //       const rExtended: ReleaseExtended[] = r.data.map((r1) => {
-  //         const a = extractRelease(r1.name);
-
-  //         return { ...r1, ...a };
-  //       });
-  //       return rExtended.sort((a, b) => (a.qIndex > b.qIndex ? -1 : 1));
-  //     }),
-  //     new Promise((resolve, reject) => {
-  //       let wait = setTimeout(() => {
-  //         clearTimeout(wait);
-  //         resolve("");
-  //       }, 500);
-  //     }),
-  //   ]);
-
-  //   return releases;
-  //   return [];
-  // }
+  async function loadMore(page: number) {
+    currentPage = allReleases.slice(
+      (page - 1) * releasesPerPage,
+      page * releasesPerPage
+    );
+  }
 
   $: if (repository) {
     dataLoaded = false;
     loadReleases(repository).then((r) => {
       dataLoaded = true;
-      releases = r;
+      allReleases = r;
     });
   }
-
-  // $: console.log(totalPages);
 </script>
 
 <div class="files-container">
   {#if !dataLoaded}
     <Loading withOverlay={true} />
-  {:else if releases.length > 0}
+  {:else if allReleases.length > 0}
     <release-header>
       <div>RELEASE NAME</div>
       <div>PATCH</div>
@@ -86,11 +83,14 @@
       <div>EXE SIZE</div>
       <div>DOWNLOAD</div>
     </release-header>
-    <releases>
+    <releases
+      bind:this={releasesContainer}
+      bind:clientHeight={releasesContainerHeight}
+    >
       <releases-list>
-        {#each releases as release}
+        {#each currentPage as release}
           <release>
-            <div>{release.qRelease}</div>
+            <div title={release.name}>{release.qRelease}</div>
             <div>{release.qReleaseType}</div>
             <div>{release.tag_name}</div>
             <div>
@@ -113,12 +113,13 @@
           </release>
         {/each}
       </releases-list>
-      <!-- {#if totalPages && totalPages > 0}
+      {#if totalPages && totalPages > 0}
         <Pagination
           {totalPages}
+          height={paginationHeight}
           on:click:button--position={(ev) => loadMore(parseInt(ev.detail))}
         />
-      {/if} -->
+      {/if}
     </releases>
   {:else}
     <no-releases>No releases available</no-releases>
@@ -143,7 +144,7 @@
   }
 
   releases-list {
-    overflow: auto;
+    overflow: hidden;
     height: 100%;
     display: inline-block;
     width: 100%;
