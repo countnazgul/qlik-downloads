@@ -1,42 +1,31 @@
 <script lang="ts">
   import { Loading } from "carbon-components-svelte";
-  import Pagination from "./Pagination.svelte";
+  // import Pagination from "./Pagination.svelte";
   import { makeGetRequest, makeGetRequestWithoutPaging } from "../lib/comms";
+  import { extractRelease } from "../lib/util";
 
-  import type { Release, Repository } from "../lib/types";
+  import type { ReleaseExtended, Repository } from "../lib/types";
 
   export let repository: Repository;
   let dataLoaded = false;
-  let totalPages = 0;
+  // let totalPages = 0;
 
-  let releases: Release[] = [];
+  let releases: ReleaseExtended[] = [];
 
-  async function loadReleases(repo: Repository): Promise<Release[]> {
+  async function loadReleases(repo: Repository): Promise<ReleaseExtended[]> {
     [releases] = await Promise.all([
-      makeGetRequestWithoutPaging<Release>(
-        `repos/qlik-download/${repo.name}/releases?per_page=50`
-      ).then((r) => {
-        totalPages = r.totalPages;
-        return r.data.sort((a, b) => (a.tag_name > b.tag_name ? -1 : 1));
-      }),
-      new Promise((resolve, reject) => {
-        let wait = setTimeout(() => {
-          clearTimeout(wait);
-          resolve("");
-        }, 500);
-      }),
-    ]);
-
-    return releases;
-  }
-
-  async function loadMore(page: number): Promise<Release[]> {
-    [releases] = await Promise.all([
-      makeGetRequestWithoutPaging<Release>(
-        `repos/qlik-download/${repository.name}/releases?page=${page}&per_page=50`
+      makeGetRequest<ReleaseExtended>(
+        `repos/qlik-download/${repo.name}/releases?per_page=50`,
+        true
       ).then((r) => {
         // totalPages = r.totalPages;
-        return r.data.sort((a, b) => (a.tag_name > b.tag_name ? -1 : 1));
+
+        const rExtended: ReleaseExtended[] = r.map((r1) => {
+          const a = extractRelease(r1.name);
+
+          return { ...r1, ...a };
+        });
+        return rExtended.sort((a, b) => (a.qIndex > b.qIndex ? -1 : 1));
       }),
       new Promise((resolve, reject) => {
         let wait = setTimeout(() => {
@@ -48,6 +37,32 @@
 
     return releases;
   }
+
+  // async function loadMore(page: number): Promise<Release[]> {
+  //   [releases] = await Promise.all([
+  //     makeGetRequestWithoutPaging<Release>(
+  //       `repos/qlik-download/${repository.name}/releases?page=${page}&per_page=50`
+  //     ).then((r) => {
+  //       // totalPages = r.totalPages;
+  //       // return r.data.sort((a, b) => (a.tag_name > b.tag_name ? -1 : 1));
+  //       const rExtended: ReleaseExtended[] = r.data.map((r1) => {
+  //         const a = extractRelease(r1.name);
+
+  //         return { ...r1, ...a };
+  //       });
+  //       return rExtended.sort((a, b) => (a.qIndex > b.qIndex ? -1 : 1));
+  //     }),
+  //     new Promise((resolve, reject) => {
+  //       let wait = setTimeout(() => {
+  //         clearTimeout(wait);
+  //         resolve("");
+  //       }, 500);
+  //     }),
+  //   ]);
+
+  //   return releases;
+  //   return [];
+  // }
 
   $: if (repository) {
     dataLoaded = false;
@@ -66,6 +81,7 @@
   {:else if releases.length > 0}
     <release-header>
       <div>RELEASE NAME</div>
+      <div>PATCH</div>
       <div>VERSION</div>
       <div>EXE SIZE</div>
       <div>DOWNLOAD</div>
@@ -74,7 +90,8 @@
       <releases-list>
         {#each releases as release}
           <release>
-            <div>{release.name}</div>
+            <div>{release.qRelease}</div>
+            <div>{release.qReleaseType}</div>
             <div>{release.tag_name}</div>
             <div>
               {Math.floor(Number(release.assets[0].size) / 1024 / 1024)} MB
@@ -96,12 +113,12 @@
           </release>
         {/each}
       </releases-list>
-      {#if totalPages && totalPages > 0}
+      <!-- {#if totalPages && totalPages > 0}
         <Pagination
           {totalPages}
           on:click:button--position={(ev) => loadMore(parseInt(ev.detail))}
         />
-      {/if}
+      {/if} -->
     </releases>
   {:else}
     <no-releases>No releases available</no-releases>
@@ -134,7 +151,7 @@
 
   release {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
   }
 
   release > div {
@@ -146,7 +163,7 @@
     border-right: 1px solid;
   }
 
-  release > div:nth-child(4) {
+  release > div:nth-child(5) {
     display: flex;
     justify-content: center;
     gap: 5px;
@@ -159,7 +176,7 @@
 
   release-header {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
     background-color: #059848;
     /* height: 30px; */
   }

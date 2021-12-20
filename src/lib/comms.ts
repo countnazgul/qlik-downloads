@@ -30,7 +30,7 @@ async function getAllPages<T>(url: string, maxPages: number): Promise<T[]> {
   let requests = [];
 
   for (let i = 2; i < maxPages + 1; i++) {
-    requests.push(fetch(`${url}?page=${i}`).then((res) => res.json()));
+    requests.push(fetch(`${url}&page=${i}`).then((res) => res.json()));
   }
 
   const data = await Promise.all<T>(requests);

@@ -142,6 +142,12 @@ export interface Release {
   body: string;
 }
 
+export interface ReleaseExtended extends Release {
+  qRelease: string;
+  qReleaseType: string;
+  qIndex: string;
+}
+
 export interface ReleaseAssets {
   url: string;
   id: number;
