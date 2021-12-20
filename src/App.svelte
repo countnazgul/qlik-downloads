@@ -5,7 +5,8 @@
   import LogoGithub24 from "carbon-icons-svelte/lib/LogoGithub24";
   import "carbon-components-svelte/css/all.css";
   import { makeGetRequest } from "./lib/comms";
-  import type { Repository, Release } from "./lib/types";
+  import { productsList } from "./lib/util";
+  import type { Repository, Release, RepositoryExtended } from "./lib/types";
   import Files from "./components/Files.svelte";
   import type { CarbonTheme } from "carbon-components-svelte/types/Theme/Theme.svelte";
 
@@ -15,11 +16,21 @@
 
   $: fill = theme == "g90" ? "white" : "black";
 
-  async function loadData(): Promise<Repository[]> {
+  async function loadData(): Promise<RepositoryExtended[]> {
     let [repos] = await Promise.all([
-      makeGetRequest<Repository>("orgs/qlik-download/repos", true).then((r) =>
-        r.sort((a, b) => (a.description > b.description ? 1 : -1))
-      ),
+      makeGetRequest<Repository>("orgs/qlik-download/repos", true).then((r) => {
+        let rIndex: RepositoryExtended[] = r.map((r) => ({
+          ...r,
+          qIndex: productsList.indexOf(
+            r.description.replace("Product Composition repository for ", "")
+          ),
+        }));
+
+        // r.sort((a, b) => (a.description > b.description ? 1 : -1));
+        rIndex.sort((a, b) => (a.qIndex > b.qIndex ? -1 : 1));
+
+        return rIndex;
+      }),
       new Promise((resolve, reject) => {
         let wait = setTimeout(() => {
           clearTimeout(wait);

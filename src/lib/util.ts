@@ -44,16 +44,32 @@ export function extractRelease(releaseName: string): {
   };
 }
 
-// export function sortArrayByTwoProperties(
-//   array,
-//   prop1,
-//   asc1 = true,
-//   prop2,
-//   asc2 = true
-// ) {
-//   return array.sort(
-//     (a, b) =>
-//       (asc1 ? a[prop1] - b[prop1] : b[prop1] - a[prop1]) ||
-//       (asc2 ? a[prop2] - b[prop2] : b[prop2] - a[prop2])
-//   );
-// }
+export const productsList = [
+  "Qlik Fortress Installer",
+  "Qlik Alerting for Windows",
+  "Qlik NPrinting",
+  "Qlik Catalog",
+  "Qlik Replicate",
+  "Qlik Compose",
+  "Qlik Connector for use with SAP NetWeaver®",
+  "Qlik Lineage Connector",
+  "Qlik Essbase Connector",
+  "Qlik Salesforce Connector",
+  "Qlik ODBC Connector",
+  "Qlik REST Connector",
+  "Qlik Web Connectors",
+  "Qlik GeoAnalytics Data Package",
+  "Qlik GeoAnalytics Plus",
+  "Qlik GeoAnalytics Server",
+  "Qlik GeoAnalytics For QlikView",
+  "Qlik GeoAnalytics For Qlik Sense",
+  "QlikView IE plug-in",
+  "QlikView OCX",
+  "QlikView Workbench",
+  "QlikView Governance Dashboard",
+  "QlikView Object Migration for Cloud",
+  "QlikView Desktop",
+  "QlikView Server",
+  "Qlik Sense Desktop",
+  "Qlik Sense Server",
+];

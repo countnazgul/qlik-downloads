@@ -92,6 +92,10 @@ export interface Repository {
   permissions: RepositoryPermissions;
 }
 
+export interface RepositoryExtended extends Repository {
+  qIndex: number;
+}
+
 export interface RepositoryOwner {
   login: string;
   id: number;
