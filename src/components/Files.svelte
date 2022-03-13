@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { Loading } from "carbon-components-svelte";
+  import { Loading, Button, Modal } from "carbon-components-svelte";
   import Pagination from "./Pagination.svelte";
   import { makeGetRequest, makeGetRequestWithoutPaging } from "../lib/comms";
   import { extractRelease } from "../lib/util";
-
+  import ChevronRight16 from "carbon-icons-svelte/lib/ChevronRight16";
   import type { ReleaseExtended, Repository } from "../lib/types";
 
   export let repository: Repository;
@@ -15,6 +15,9 @@
   let allReleases: ReleaseExtended[] = [];
   let currentPage: ReleaseExtended[] = [];
   let dataLoaded = false;
+  let downloadsModalOpen = false;
+  let downloadsActiveRelease: ReleaseExtended;
+  let downloadsModalHeading = "";
 
   $: releasesPerPage = releasesContainer
     ? Math.floor(Math.floor(releasesContainerHeight) / releaseElementHeight) - 2
@@ -24,11 +27,6 @@
     ? (currentPage = allReleases.slice(0, releasesPerPage))
     : [];
   $: paginationHeight = releasesContainerHeight - releasesPerPage * 30;
-  $: console.log(
-    releasesContainerHeight,
-    releasesPerPage * 30,
-    paginationHeight
-  );
 
   async function loadReleases(repo: Repository): Promise<ReleaseExtended[]> {
     [allReleases] = await Promise.all([
@@ -43,6 +41,7 @@
 
           return { ...r1, ...a };
         });
+
         return rExtended.sort((a, b) => (a.qIndex > b.qIndex ? -1 : 1));
       }),
       new Promise((resolve, reject) => {
@@ -80,8 +79,7 @@
       <div>RELEASE NAME</div>
       <div>PATCH</div>
       <div>VERSION</div>
-      <div>EXE SIZE</div>
-      <div>DOWNLOAD</div>
+      <div>DOWNLOADS</div>
     </release-header>
     <releases
       bind:this={releasesContainer}
@@ -102,22 +100,42 @@
             <div class:initial-release={release.qReleaseType == "0"}>
               {release.tag_name}
             </div>
-            <div class:initial-release={release.qReleaseType == "0"}>
-              {Math.floor(Number(release.assets[0].size) / 1024 / 1024)} MB
-            </div>
             <div>
-              <a href={release.assets[0].browser_download_url}>exe</a> |
-              <a
-                href={`https://github.com/qlik-download/${
-                  release.url.split("/")[5]
-                }/archive/refs/tags/${release.tag_name}.zip`}>zip</a
-              >
-              |
-              <a
-                href={`https://github.com/qlik-download/${
-                  release.url.split("/")[5]
-                }/archive/refs/tags/${release.tag_name}.tar.gz`}>tar.gz</a
-              >
+              {#if release.assets.length <= 2}
+                <div class="downloads">
+                  <div>
+                    {#each release.assets as asset, i}
+                      <a href={asset.browser_download_url} title={asset.name}
+                        >{asset.name.substring(asset.name.lastIndexOf(".") + 1)}
+                        ({Math.floor(Number(asset.size) / 1024 / 1024)} MB)</a
+                      >
+                      {#if i != release.assets.length - 1}
+                        ,&nbsp;
+                      {/if}
+                    {/each}
+                  </div>
+                  <div class="show-downloads" title="Show all downloads">
+                    <ChevronRight16
+                      on:click={() => {
+                        downloadsActiveRelease = release;
+                        downloadsModalOpen = true;
+                      }}
+                    />
+                  </div>
+                </div>
+              {/if}
+              {#if release.assets.length > 2}
+                <div class="downloads">
+                  <Button
+                    size="small"
+                    kind="ghost"
+                    on:click={() => {
+                      downloadsActiveRelease = release;
+                      downloadsModalOpen = true;
+                    }}>Show all downloads</Button
+                  >
+                </div>
+              {/if}
             </div>
           </release>
         {/each}
@@ -132,6 +150,33 @@
     </releases>
   {:else}
     <no-releases>No releases available</no-releases>
+  {/if}
+
+  {#if downloadsActiveRelease}
+    <Modal
+      bind:open={downloadsModalOpen}
+      modalHeading={`${repository.description.replace(
+        "Product Composition repository for ",
+        ""
+      )} (${downloadsActiveRelease.name})`}
+      passiveModal
+      on:click:button--secondary={() => (downloadsModalOpen = false)}
+      on:open={() => {
+        // console.log(downloadsActiveRelease);
+      }}
+      on:close={() => {
+        // downloadsActiveAssets = [];
+      }}
+    >
+      <div class="downloads-all-modal">
+        {#each downloadsActiveRelease.assets as asset}
+          <a href={asset.browser_download_url} title={asset.name}
+            >{asset.name}
+            ({Math.floor(Number(asset.size) / 1024 / 1024)} MB)</a
+          >
+        {/each}
+      </div>
+    </Modal>
   {/if}
 </div>
 
@@ -149,7 +194,7 @@
     width: 100%;
     display: flex;
     flex-direction: column;
-    scrollbar-gutter: stable both-edges;
+    scrollbar-gutter: both-edges;
   }
 
   releases-list {
@@ -161,7 +206,7 @@
 
   release {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
   }
 
   release > div {
@@ -186,7 +231,7 @@
 
   release-header {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
     background-color: #059848;
     /* height: 30px; */
   }
@@ -221,5 +266,25 @@
   .initial-release {
     color: #059848;
     border-right: 1px solid var(--cds-text-01, #161616);
+  }
+
+  .downloads {
+    display: flex;
+  }
+
+  .downloads-all-modal {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    padding-top: 10px;
+  }
+
+  .downloads-all-modal > a {
+    padding-top: 5px;
+  }
+
+  .show-downloads {
+    margin-left: auto;
+    cursor: pointer;
   }
 </style>
