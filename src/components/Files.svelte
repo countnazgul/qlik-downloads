@@ -90,14 +90,21 @@
           <release>
             <div
               title={release.name}
-              class:initial-release={release.qReleaseType == "0"}
+              class:initial-release={release.qReleaseType == "0" ||
+                release.qReleaseType.toLocaleLowerCase() == "initial release"}
             >
               {release.qRelease}
             </div>
-            <div class:initial-release={release.qReleaseType == "0"}>
+            <div
+              class:initial-release={release.qReleaseType == "0" ||
+                release.qReleaseType.toLocaleLowerCase() == "initial release"}
+            >
               {release.qReleaseType}
             </div>
-            <div class:initial-release={release.qReleaseType == "0"}>
+            <div
+              class:initial-release={release.qReleaseType == "0" ||
+                release.qReleaseType.toLocaleLowerCase() == "initial release"}
+            >
               {release.tag_name}
             </div>
             <div>
