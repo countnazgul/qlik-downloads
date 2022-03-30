@@ -16,6 +16,10 @@
 
   $: fill = theme == "g90" ? "white" : "black";
 
+  const reposToExclude: string[] = [
+    "For argocd config files and application files for forts, data gateway and any other projects",
+  ];
+
   async function loadData(): Promise<RepositoryExtended[]> {
     let [repos] = await Promise.all([
       makeGetRequest<Repository>("orgs/qlik-download/repos", true).then((r) => {
@@ -96,17 +100,18 @@
     <products>
       <ul>
         {#each repos as repo}
-          <li
-            on:click={() => loadReleases(repo)}
-            class:active={selectedProduct.name == repo.name}
-          >
-            <div title={repo.description} class="repo-name">
-              {repo.description.replace(
-                "Product Composition repository for ",
-                ""
-              )}
-            </div>
-          </li>
+          {#if !reposToExclude.includes(repo.description.replace("Product Composition repository for ", ""))}
+            <li
+              on:click={() => loadReleases(repo)}
+              class:active={selectedProduct.name == repo.name}
+            >
+              <div title={repo.description} class="repo-name">
+                {repo.description
+                  .replace("Product Composition repository for ", "")
+                  .substring(0, 50)}
+              </div>
+            </li>
+          {/if}
         {/each}
       </ul>
     </products>
